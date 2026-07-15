@@ -35,7 +35,7 @@ float PID::update(float error) {
   if (this->integral > max_integral) this->integral = max_integral;
   if (this->integral < -max_integral) this->integral = -max_integral; //clap integral to prevent it from winding up
 
-  //calulae ouput
+  //calulate output
   float output = this->kp * error + this->ki * this->integral + this->kd * derivative;
   this->previousError = error;
 

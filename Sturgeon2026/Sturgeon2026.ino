@@ -1,10 +1,7 @@
 #include <FastLED.h>
-#include <Alfredo_NoU3.h>
-#include <PestoLink-Receive.h>
+#include "Alfredo_NoU3.h"
+#include "PestoLink-Receive.h"
 #include "Constants.h"
-#include "PID.h"
-
-PID turretPID(turretkP, turretkI, turretkD, -1, 1);
 
 NoU_Motor frontLeftMotor(1);
 NoU_Motor frontRightMotor(2);
@@ -12,66 +9,179 @@ NoU_Motor rearLeftMotor(3);
 NoU_Motor rearRightMotor(4);
 NoU_Drivetrain drivetrain(&frontLeftMotor, &frontRightMotor, &rearLeftMotor, &rearRightMotor);
 
-NoU_Motor spindexer(5);
-NoU_Motor turret(6);
-NoU_Motor intakeWheels(7);
-NoU_Motor shooter(8);
+NoU_Motor spintake(5);
+NoU_Motor kicker(6);
+NoU_Motor flywheelLeft(7);
+NoU_Motor flywheelRight(8);
 
 NoU_Servo intakePivot(1);
-NoU_Servo hood(2);
-NoU_Servo climber(3);
+NoU_Servo turret(2);
+NoU_Servo hoodLeft(3);
+NoU_Servo hoodRight(4);
 
 STATE robotState;
+ALLIANCE alliance;  
+INTAKESTATE intakeState;
 
 void setup() {
   NoU3.begin();
   NoU3.calibrateIMUs();
-  PestoLink.begin("Sturgeon");
-  turret.beginEncoder();
-  xTaskCreatePinnedToCore(taskUpdateTurret, "taskUpdateTurret", 4096, NULL, 2, NULL, 1);
-  robotState = START;
-}
+  PestoLink.begin("SturgSON");
+  xTaskCreatePinnedToCore(task, "task", 4096, NULL, 2, NULL, 1);
 
-void setLEDS() {
-    if(LEDCounter > 7) {
-      LEDCounter = 0;
-      for(int i = 0; i < 16; i++) {
-        leds[i] = CRGB::Black;
-      }
-    }
-    if(robotState == START) {
-      leds[LEDCounter] = CRGB::Green;
-      leds[LEDCounter + 8] = CRGB::Green;
-    }
-    else if(robotState == SHUTTLE) {
-      leds[LEDCounter] = CRGB::Green;
-      leds[LEDCounter + 8] = CRGB::Green;
-    }
-    else if(robotState == SHOOTING) {
-      leds[LEDCounter] = CRGB::Green;
-      leds[LEDCounter + 8] = CRGB::Green;
-    }
-    else if(robotState == INTAKING) {
-      leds[LEDCounter] = CRGB::Green;
-      leds[LEDCounter + 8] = CRGB::Green;
-    }
-    else if(robotState == NORMAL) {
-      for(int i = 0; i < 16; i++) leds[i] = CRGB::Yellow;
-    }
-    if(LEDCounter > 0 && (LEDCounter + 8) > 8) {
-      leds[LEDCounter -1] = CRGB::Black;
-      leds[LEDCounter + 7] = CRGB::Black;
-    }
-  LEDCounter++;
+  robotState = START;
+  current_time = millis();
+  previous_time = current_time;
+
+  FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
+  FastLED.setMaxPowerInVoltsAndMilliamps(5, 500);
+  FastLED.setBrightness(20);
+  FastLED.clear();
   FastLED.show();
 }
 
-void loop() {
-  
+void setLEDS() {
+  int timeDifference = current_time - previous_time;
+  if(robotState == START) {
+    if (alliance == RED) 
+      for(int i = 0; i < 16; i++) 
+        leds[i] = CRGB::Red;
+    if (alliance == BLUE) 
+      for(int i = 0; i < 16; i++) 
+        leds[i] = CRGB::Blue;
+  }
+  else if(robotState == SHUTTLE) {
+    for(int i = 0; i < 16; i++) 
+      leds[i] = CRGB::Orange;
+  }
+  else if(robotState == NORMAL) {
+    for(int i = 0; i < 16; i++)
+      leds[i] = CRGB::Yellow;
+  }
+  // else if(robotState == SHOOTING) {
+  //   if (timeDifference > 250) 
+  //     leds[i] = CRGB::Black;
+  //   if(timeDifference > 500) {
+  //     leds[i] = CRGB::Green;
+  //     previous_time = current_time;
+  //   }
+  // }
+  // else if(robotState == INTAKING) {
+  //   if (timeDifference > 250) 
+  //     leds[i] = CRGB::Black;
+  //   if(timeDifference > 500) {
+  //     leds[i] = CRGB::Green;
+  //     previous_time = current_time;
+  //   }
+  // }
+  FastLED.show();
 }
 
-void taskUpdateTurret(void* pvParameters) {
-  while (true) {
+void controls() {
+  int yaw = (int) heading % 360;
+  yaw = (yaw>90-MOE && yaw<90+MOE) ? yaw = 90 :
+        (yaw>180-MOE && yaw<180+MOE) ? yaw = 180 :
+        (yaw>270-MOE && yaw<270+MOE) ? yaw = 270 :
+        (yaw>360-MOE || yaw<MOE) ? yaw = 360 :
+        yaw;
 
+  //INTAKE
+  if(PestoLink.buttonHeld(leftTrigger)) {
+    if(intakeState == UP) {
+      intakeState = DOWN;
+      intakePivot.write(intakeState);
+    }
+    spintake.set(1);
+    kicker.set(-1);
+  } else {
+    spintake.set(0);
+  }
+  if(PestoLink.buttonHeld(buttonA)) {
+    intakeState = UP;
+    intakePivot.write(intakeState);
+  }
+  
+  //SHOOTER
+  if(PestoLink.buttonHeld(rightTrigger)) {
+    flywheelLeft.set(currentLeftFlywheel);
+    flywheelRight.set(currentRightFlywheel);
+    kicker.set(1);
+    spintake.set(1);
+  }
+  else if (!PestoLink.buttonHeld(rightBumper)){
+    kicker.set(0);
+    spintake.set(0);
+  }
+
+  //RIGHT TRENCH
+  if(PestoLink.buttonHeld(buttonB)) {
+    if(yaw = 360) usePreset(rightTrench);
+    if(yaw = 270) usePreset(RTrenchLeft);
+    if(yaw = 180) usePreset(RTrenchBack);
+    if(yaw = 90) usePreset (RTrenchRight);
+  }
+
+  //LEFT TRENCH
+  if(PestoLink.buttonHeld(buttonX)) {
+    if(yaw = 360) usePreset(leftTrench);
+    if(yaw = 270) usePreset(LTrenchLeft);
+    if(yaw = 180) usePreset(LTrenchBack);
+    if(yaw = 90) usePreset (LTrenchRight);
+  }
+
+  //UNDER HUB
+  if(PestoLink.buttonHeld(buttonY)) {
+    if(yaw = 360) usePreset(hub);
+    if(yaw = 270) usePreset(hubLeft);
+    if(yaw = 180) usePreset(hubBack);
+    if(yaw = 90) usePreset (hubRight);
+  }
+
+  //PASS
+  if(PestoLink.buttonHeld(rightBumper)) {
+    turretAngleCurrent =  (int)(heading + 180) % 360;
+    hoodLeftCurrent = HOOD_MAX;
+    hoodRightCurrent = HOOD_MAX;
+    currentLeftFlywheel = PASS_SPEED;
+    currentRightFlywheel = PASS_SPEED;
+    kicker.set(1);
+    spintake.set(1);
+  }
+
+  //FLATTEN HOOD FOR TRENCH
+  if(PestoLink.buttonHeld(leftBumper)) {
+    hoodRightCurrent = HOOD_FLAT;
+    hoodLeftCurrent = HOOD_FLAT;
+  }
+
+}
+
+void loop() {
+  controls();
+}
+
+void task(void* pvParameters) {
+  while (true) {
+    heading = NoU3.yaw * angular_scale;
+    roll = NoU3.roll * angular_scale;
+    pitch = NoU3.pitch * angular_scale;
+    float yVelocity = -PestoLink.getAxis(1);
+    float xVelocity = PestoLink.getAxis(0);
+    float rotation = -PestoLink.getAxis(2);
+
+    // Rotate joystick vector to be robot-centric
+    float cosA = cos(heading);
+    float sinA = sin(heading);
+
+    float xField = xVelocity * cosA + yVelocity * sinA;
+    float yField = -xVelocity * sinA + yVelocity * cosA;
+
+    //set motor power
+    drivetrain.holonomicDrive(xField, yField, rotation);
+    turret.write(turretAngleCurrent);
+    hoodLeft.write(hoodLeftCurrent);
+    hoodRight.write(hoodRightCurrent);
+    
+    setLEDS();
   }
 }

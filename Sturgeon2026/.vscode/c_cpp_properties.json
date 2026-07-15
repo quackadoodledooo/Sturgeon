@@ -1,0 +1,37 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${C:/Users/cools/Documents/Arduino/libraries}/**",
+                "${C:/Users/cools/AppData/Local/Arduino15/packages}/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "windowsSdkVersion": "10.0.26100.0",
+            "compilerPath": "cl.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-msvc-x64"
+        },
+        {
+            "name": "Arduino",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "C:/Users/cools/Documents/Arduino/libraries/**",
+                "C:/Users/cools/AppData/Local/Arduino15/packages/**",
+                "/Users/YOUR_USERNAME/Documents/Arduino/libraries/**",
+                "/Users/YOUR_USERNAME/Library/Arduino15/packages/**",
+                "/home/YOUR_USERNAME/Arduino/libraries/**",
+                "/home/YOUR_USERNAME/.arduino15/packages/**"
+            ],
+            "intelliSenseMode": "windows-gcc-x64",
+            "compilerPath": ""
+        }
+    ],
+    "version": 4
+}
