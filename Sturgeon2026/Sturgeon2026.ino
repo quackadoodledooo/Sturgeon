@@ -137,6 +137,27 @@ void controls() {
     if(yaw = 90) usePreset (hubRight);
   }
 
+  if(PestoLink.keyHeld(Key::Numpad1)) {
+    if(yaw = 360) usePreset(depotCorner);
+    if(yaw = 270) usePreset(depotLeft);
+    if(yaw = 180) usePreset(depotBack);
+    if(yaw = 90) usePreset (depotRight);
+  }
+
+  if(PestoLink.keyHeld(Key::Numpad2)) {
+    if(yaw = 360) usePreset(tower);
+    if(yaw = 270) usePreset(towerLeft);
+    if(yaw = 180) usePreset(towerBack);
+    if(yaw = 90) usePreset (towerRight);
+  }
+
+  if(PestoLink.keyHeld(Key::Numpad3)) {
+    if(yaw = 360) usePreset(outpostCorner);
+    if(yaw = 270) usePreset(outpostLeft);
+    if(yaw = 180) usePreset(outpostBack);
+    if(yaw = 90) usePreset (outpostRight);
+  }
+
   //PASS
   if(PestoLink.buttonHeld(rightBumper)) {
     turretAngleCurrent =  (int)(heading + 180) % 360;
@@ -153,6 +174,8 @@ void controls() {
     hoodRightCurrent = HOOD_FLAT;
     hoodLeftCurrent = HOOD_FLAT;
   }
+
+  
 
 }
 
