@@ -88,8 +88,14 @@ void loop() {
     PestoLink.printBatteryVoltage(batteryVoltage);
 
 
-    int yaw = (int) heading % 360;
-  yaw = (yaw>90-MOE && yaw<90+MOE) ? yaw = 90 :
+    int yaw=roll*(PI/180);
+    while(yaw>360){
+        yaw-=360;
+    }
+    while(yaw<0){
+        yaw+=360;
+    }
+    yaw = (yaw>90-MOE && yaw<90+MOE) ? yaw = 90 :
         (yaw>180-MOE && yaw<180+MOE) ? yaw = 180 :
         (yaw>270-MOE && yaw<270+MOE) ? yaw = 270 :
         (yaw>360-MOE || yaw<MOE) ? yaw = 360 :
@@ -103,7 +109,7 @@ void loop() {
     kicker.set(1);
     spintake.set(1);
   } else if(PestoLink.buttonHeld(rightBumper)) { //pass
-    turretAngleCurrent =  (int)(heading + 180) % 360;
+    turretAngleCurrent =  (int)(roll + 180) % 360;
     hoodLeftCurrent = HOOD_MAX;
     hoodRightCurrent = HOOD_MAX;
     currentLeftFlywheel = PASS_SPEED;
@@ -193,8 +199,8 @@ void task(void* pvParameters) {
     float rotation = -PestoLink.getAxis(2);
 
     // Rotate joystick vector to be robot-centric
-    float cosA = cos(heading);
-    float sinA = sin(heading);
+    float cosA = cos(roll);
+    float sinA = sin(roll);
 
     float xField = xVelocity * cosA + yVelocity * sinA;
     float yField = -xVelocity * sinA + yVelocity * cosA;
