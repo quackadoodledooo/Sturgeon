@@ -27,8 +27,8 @@ int turretAngleCurrent;
 //Tuning procedure:
 //Rotate the robot in place 5 times. Use the Serial printout to read the current gyro angle in Radians, we will call this "measured_angle".
 //measured_angle should be nearly 31.416 which is 5*2*pi. Update measured_angle below to complete the tuning process.
-int measured_angle = 27.562;
-int angular_scale = (5.0 * 2.0 * PI) / measured_angle;
+float measured_angle = 27.562;
+float angular_scale = (5.0 * 2.0 * PI) / measured_angle;
 
 struct Preset
 {
@@ -82,8 +82,8 @@ void usePreset(Preset preset) {
 }
 
 enum INTAKESTATE { //CHANGE THESE NUMBERS TO ACTUAL SERVO VALUES FOR UP AND DOWN
-  UP = 0,
-  DOWN = 1
+  UP = 10,
+  DOWN = 85
 };
 
 enum ALLIANCE {

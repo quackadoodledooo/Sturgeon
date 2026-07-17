@@ -9,12 +9,13 @@ NoU_Motor rearLeftMotor(3);
 NoU_Motor rearRightMotor(4);
 NoU_Drivetrain drivetrain(&frontLeftMotor, &frontRightMotor, &rearLeftMotor, &rearRightMotor);
 
-NoU_Motor spintake(1);
+NoU_Motor intake(1);
 NoU_Motor kicker(6);
-NoU_Motor flywheelLeft(7);
-NoU_Motor flywheelRight(5);
+NoU_Motor flywheels(7);
+NoU_Motor spindexers(5);
 
 NoU_Servo intakePivot(5);
+NoU_Servo intakePivot2(1);
 NoU_Servo turret(2);
 NoU_Servo hoodLeft(3);
 NoU_Servo hoodRight(4);
@@ -77,12 +78,14 @@ void setLEDS() {
   // }
   FastLED.show();
 }
-
 void controls() {
 }
 
 void loop() {
   //controls();
+
+      float batteryVoltage = NoU3.getBatteryVoltage();
+    PestoLink.printBatteryVoltage(batteryVoltage);
 
 
     int yaw = (int) heading % 360;
@@ -92,13 +95,7 @@ void loop() {
         (yaw>360-MOE || yaw<MOE) ? yaw = 360 :
         yaw;
 
-if(PestoLink.isConnected()){
-  spintake.set(1);
-}else{
-  spintake.set(0);
-}
 
-/*
   //SHOOTER
   if(PestoLink.buttonHeld(7)) {
     flywheelLeft.set(currentLeftFlywheel);
@@ -124,50 +121,50 @@ if(PestoLink.isConnected()){
     kicker.set(0);
     spintake.set(0);
   }
-*/
+
   //RIGHT TRENCH
   if(PestoLink.buttonHeld(buttonB)) {
-    if(yaw = 360) usePreset(rightTrench);
-    if(yaw = 270) usePreset(RTrenchLeft);
-    if(yaw = 180) usePreset(RTrenchBack);
-    if(yaw = 90) usePreset (RTrenchRight);
+    if(yaw == 360) usePreset(rightTrench);
+    if(yaw == 270) usePreset(RTrenchLeft);
+    if(yaw == 180) usePreset(RTrenchBack);
+    if(yaw == 90) usePreset (RTrenchRight);
   }
 
   //LEFT TRENCH
   if(PestoLink.buttonHeld(buttonX)) {
-    if(yaw = 360) usePreset(leftTrench);
-    if(yaw = 270) usePreset(LTrenchLeft);
-    if(yaw = 180) usePreset(LTrenchBack);
-    if(yaw = 90) usePreset (LTrenchRight);
+    if(yaw == 360) usePreset(leftTrench);
+    if(yaw == 270) usePreset(LTrenchLeft);
+    if(yaw == 180) usePreset(LTrenchBack);
+    if(yaw == 90) usePreset (LTrenchRight);
   }
 
   //UNDER HUB
   if(PestoLink.buttonHeld(buttonY)) {
-    if(yaw = 360) usePreset(hub);
-    if(yaw = 270) usePreset(hubLeft);
-    if(yaw = 180) usePreset(hubBack);
-    if(yaw = 90) usePreset (hubRight);
+    if(yaw == 360) usePreset(hub);
+    if(yaw == 270) usePreset(hubLeft);
+    if(yaw == 180) usePreset(hubBack);
+    if(yaw == 90) usePreset (hubRight);
   }
 
   if(PestoLink.keyHeld(Key::Numpad1)) {
-    if(yaw = 360) usePreset(depotCorner);
-    if(yaw = 270) usePreset(depotLeft);
-    if(yaw = 180) usePreset(depotBack);
-    if(yaw = 90) usePreset (depotRight);
+    if(yaw == 360) usePreset(depotCorner);
+    if(yaw == 270) usePreset(depotLeft);
+    if(yaw == 180) usePreset(depotBack);
+    if(yaw == 90) usePreset (depotRight);
   }
 
   if(PestoLink.keyHeld(Key::Numpad2)) {
-    if(yaw = 360) usePreset(tower);
-    if(yaw = 270) usePreset(towerLeft);
-    if(yaw = 180) usePreset(towerBack);
-    if(yaw = 90) usePreset (towerRight);
+    if(yaw == 360) usePreset(tower);
+    if(yaw == 270) usePreset(towerLeft);
+    if(yaw == 180) usePreset(towerBack);
+    if(yaw == 90) usePreset (towerRight);
   }
 
   if(PestoLink.keyHeld(Key::Numpad3)) {
-    if(yaw = 360) usePreset(outpostCorner);
-    if(yaw = 270) usePreset(outpostLeft);
-    if(yaw = 180) usePreset(outpostBack);
-    if(yaw = 90) usePreset (outpostRight);
+    if(yaw == 360) usePreset(outpostCorner);
+    if(yaw == 270) usePreset(outpostLeft);
+    if(yaw == 180) usePreset(outpostBack);
+    if(yaw == 90) usePreset (outpostRight);
   }
 
 
@@ -187,6 +184,7 @@ if(PestoLink.isConnected()){
 
 void task(void* pvParameters) {
   while (true) {
+    delay(10);
     heading = NoU3.yaw * angular_scale;
     roll = NoU3.roll * angular_scale;
     pitch = NoU3.pitch * angular_scale;
@@ -206,6 +204,7 @@ void task(void* pvParameters) {
     turret.write(turretAngleCurrent);
     hoodLeft.write(hoodLeftCurrent);
     hoodRight.write(hoodRightCurrent);
+    intakePivot2.write((intakeState - 180) * -1);
     
     setLEDS();
   }
