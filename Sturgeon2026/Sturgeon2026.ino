@@ -9,10 +9,10 @@ NoU_Motor rearLeftMotor(3);
 NoU_Motor rearRightMotor(4);
 NoU_Drivetrain drivetrain(&frontLeftMotor, &frontRightMotor, &rearLeftMotor, &rearRightMotor);
 
-NoU_Motor intake(1);
+NoU_Motor spintake(1);
 NoU_Motor kicker(6);
-NoU_Motor flywheels(7);
-NoU_Motor spindexers(5);
+NoU_Motor flywheelLeft(7);
+NoU_Motor flywheelRight(5);
 
 NoU_Servo intakePivot(5);
 NoU_Servo intakePivot2(1);
