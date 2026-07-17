@@ -190,7 +190,6 @@ void loop() {
 
 void task(void* pvParameters) {
   while (true) {
-    delay(10);
     heading = NoU3.yaw * angular_scale;
     roll = NoU3.roll * angular_scale;
     pitch = NoU3.pitch * angular_scale;
@@ -213,5 +212,6 @@ void task(void* pvParameters) {
     intakePivot2.write((intakeState - 180) * -1);
     
     setLEDS();
+    delay(10);
   }
 }
